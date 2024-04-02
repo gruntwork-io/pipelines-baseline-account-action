@@ -67,7 +67,6 @@ runs:
 
     # Finally, auth to the mgmt account so we can assume a role in the child account
     - name: "[Baseline]: Authenticate to AWS"
-      if: steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml'
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region:  ${{ inputs.default_aws_region }}
@@ -81,7 +80,6 @@ runs:
     # and it can be assumed by a role in the management account.
     - name: "[Baseline]: Assume role new child account"
       shell: bash
-      if: steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml'
       env:
         SESSION_NAME: ${{ steps.bootstrap.outputs.role_session_name }}
         CHILD_ACCOUNT: ${{ steps.bootstrap.outputs.child_account_id }}
@@ -99,7 +97,6 @@ runs:
         echo "::add-mask::$AWS_SESSION_TOKEN"
 
     - name: "[Baseline]: Confirm Account Access"
-      if: steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml'
       shell: bash
       env:
         CHILD_ACCOUNT: ${{ steps.bootstrap.outputs.child_account_id }}
@@ -116,7 +113,7 @@ runs:
     # Setting Terragrunt Parallelism to 1 does NOT prevent this error from happening. So we'll instead run an init in
     # a single module first to create the buckets so that subsequent run-all commands do not fail.
     - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
-      if: ${{ contains(steps.bootstrap.outputs.terragrunt_command, 'plan') && steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml' }}
+      if: ${{ contains(steps.bootstrap.outputs.terragrunt_command, 'plan') }}
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
@@ -125,6 +122,21 @@ runs:
         pipelines_cli_version: ${{ steps.bootstrap.outputs.pipelines_cli_version }}
         working_directory: "${{ steps.bootstrap.outputs.working_directory }}/_global/account-baseline"
         terragrunt_command: "init"
+        infra_live_repo: '.'
+        infra_live_directory: '.'
+        infra_live_repo_branch: ${{ steps.bootstrap.outputs.branch }}
+        gruntwork_config: "${{ steps.bootstrap.outputs.gruntwork_config }}"
+
+
+    - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
+      uses: gruntwork-io/pipelines-execute@v3.0.0
+      with:
+        token: ${{ inputs.gruntwork_code_access_token }}
+        tf_version: ${{ steps.bootstrap.outputs.terraform_version }}
+        tg_version: ${{ steps.bootstrap.outputs.terragrunt_version }}
+        pipelines_cli_version: ${{ steps.bootstrap.outputs.pipelines_cli_version }}
+        working_directory: "${{ steps.bootstrap.outputs.working_directory }}/_global/account-baseline"
+        terragrunt_command: ${{ inputs.terragrunt_command }}
         infra_live_repo: '.'
         infra_live_directory: '.'
         infra_live_repo_branch: ${{ steps.bootstrap.outputs.branch }}
