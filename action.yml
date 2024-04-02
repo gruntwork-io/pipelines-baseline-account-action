@@ -109,6 +109,7 @@ runs:
     # The "AWSControlTowerExecution" role being assumed here is created by Control Tower in each account it provisions
     # and it can be assumed by a role in the management account.
     - name: "[Baseline]: Assume role new child account"
+      shell: bash
       if: steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml'
       env:
         SESSION_NAME: ${{ steps.bootstrap.outputs.role_session_name }}
@@ -128,6 +129,7 @@ runs:
 
     - name: "[Baseline]: Confirm Account Access"
       if: steps.bootstrap.outputs.workflow == 'apply-new-account-baseline.yml'
+      shell: bash
       env:
         CHILD_ACCOUNT: ${{ steps.bootstrap.outputs.child_account_id }}
         WORKING_DIRECTORY: ${{ steps.bootstrap.outputs.working_directory }}
