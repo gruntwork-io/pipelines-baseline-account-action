@@ -30,7 +30,7 @@ runs:
       id: terragrunt-apply-security
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws-region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ inputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
         terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
         account_id: ${{ steps.bootstrap.outputs.security_account_id }}
@@ -43,7 +43,7 @@ runs:
       id: terragrunt-apply-logs
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws-region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ inputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
         terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
         account_id: ${{ steps.bootstrap.outputs.logs_account_id }}
@@ -53,10 +53,10 @@ runs:
 
 
     - name: "[Baseline]: Run terragrunt ${{ steps.bootstrap.outputs.terragrunt_command }} in shared account"
-      id: terragrunt-apply-logs
+      id: terragrunt-apply-shared
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws-region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ inputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
         terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
         account_id: ${{ steps.bootstrap.outputs.shared_account_id }}
