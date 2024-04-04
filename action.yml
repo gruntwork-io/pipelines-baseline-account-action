@@ -4,64 +4,55 @@ inputs:
   gruntwork_code_access_token:
     description: "The GRUNTWORK_CODE_ACCESS_TOKEN Secret"
     required: true
-  terragrunt_command:
-    description: "The name of the configured deploy branch"
-    required: false
-    default: main
-  new_account_name:
-    description: ""
+  gruntwork_context:
+    description: "Gruntwork Context From the Gruntwork Bootstrap step"
     required: true
-  default_aws_region:
-    description: "The default AWS Region (Used for Management, Security, Logs and Shared accounts)"
-    default: "us-east-1"
-    required: false
 
 runs:
   using: composite
   steps:
     - name: "[Baseline]: Read account request"
-      id: bootstrap
+      id: gruntwork_context
       uses: gruntwork-io-team/pipelines-bootstrap@main
       with:
-        new_account_name: ${{ inputs.new_account_name }}
-        terragrunt_command: ${{ inputs.terragrunt_command }}
+        cache: ${{ inputs.gruntwork_context }}
 
-    - name: "[Baseline]: Run terragrunt ${{ steps.bootstrap.outputs.terragrunt_command }} in security account"
+    - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in security account"
       id: terragrunt-apply-security
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
-        account_id: ${{ steps.bootstrap.outputs.security_account_id }}
-        account_role_name: ${{ steps.bootstrap.outputs.role_name }}
-        role_session_name: ${{ steps.bootstrap.outputs.role_session_name }}
+        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
+        account_id: ${{ steps.gruntwork_context.outputs.security_account_id }}
+        account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
+        role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: security/_global/account-baseline
 
 
-    - name: "[Baseline]: Run terragrunt ${{ steps.bootstrap.outputs.terragrunt_command }} in logs account"
+    - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
       id: terragrunt-apply-logs
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
-        account_id: ${{ steps.bootstrap.outputs.logs_account_id }}
-        account_role_name: ${{ steps.bootstrap.outputs.role_name }}
-        role_session_name: ${{ steps.bootstrap.outputs.role_session_name }}
+        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
+        account_id: ${{ steps.gruntwork_context.outputs.logs_account_id }}
+        account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
+        role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: logs/_global/account-baseline
 
 
-    - name: "[Baseline]: Run terragrunt ${{ steps.bootstrap.outputs.terragrunt_command }} in shared account"
+    - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
       id: terragrunt-apply-shared
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ inputs.default_aws_region }}
+        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.bootstrap.outputs.terragrunt_command }}
-        account_id: ${{ steps.bootstrap.outputs.shared_account_id }}
-        account_role_name: ${{ steps.bootstrap.outputs.role_name }}
-        role_session_name: ${{ steps.bootstrap.outputs.role_session_name }}
+        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
+        account_id: ${{ steps.gruntwork_context.outputs.shared_account_id }}
+        account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
+        role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: shared/_global/account-baseline
 
 
@@ -69,10 +60,10 @@ runs:
     - name: "[Baseline]: Authenticate to AWS"
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-region:  ${{ inputs.default_aws_region }}
-        role-to-assume: "arn:aws:iam::${{ steps.bootstrap.outputs.account_id }}:role/${{ steps.bootstrap.outputs.role_name }}"
+        aws-region:  ${{ steps.gruntwork_context.outputs.default_aws_region }}
+        role-to-assume: "arn:aws:iam::${{ steps.gruntwork_context.outputs.account_id }}:role/${{ steps.gruntwork_context.outputs.role_name }}"
         role-duration-seconds: 3600
-        role-session-name: ${{ steps.bootstrap.outputs.role_session_name }}
+        role-session-name: ${{ steps.gruntwork_context.outputs.role_session_name }}
 
     # Auth to child account
     # THIS RETRIEVES PERMISSIONS TO BE ABLE TO RUN A PLAN/APPLY IN THE NEWLY CREATED CHILD ACCOUNT
@@ -81,8 +72,8 @@ runs:
     - name: "[Baseline]: Assume role new child account"
       shell: bash
       env:
-        SESSION_NAME: ${{ steps.bootstrap.outputs.role_session_name }}
-        CHILD_ACCOUNT: ${{ steps.bootstrap.outputs.child_account_id }}
+        SESSION_NAME: ${{ steps.gruntwork_context.outputs.role_session_name }}
+        CHILD_ACCOUNT: ${{ steps.gruntwork_context.outputs.child_account_id }}
       run: |
         RESPONSE="$(aws sts assume-role --role-arn "arn:aws:iam::$CHILD_ACCOUNT:role/AWSControlTowerExecution" --role-session-name "$SESSION_NAME")"
         ASSUMED_ROLE_CREDS="$(echo "$RESPONSE" | jq -r '.Credentials')"
@@ -99,8 +90,8 @@ runs:
     - name: "[Baseline]: Confirm Account Access"
       shell: bash
       env:
-        CHILD_ACCOUNT: ${{ steps.bootstrap.outputs.child_account_id }}
-        WORKING_DIRECTORY: ${{ steps.bootstrap.outputs.working_directory }}
+        CHILD_ACCOUNT: ${{ steps.gruntwork_context.outputs.child_account_id }}
+        WORKING_DIRECTORY: ${{ steps.gruntwork_context.outputs.working_directory }}
       run: echo "::notice ::Running in account $CHILD_ACCOUNT and planning in $WORKING_DIRECTORY"
 
     # This Bootstrap step is a workaround for the error that happens when running plan-all for the first time in a
@@ -113,31 +104,31 @@ runs:
     # Setting Terragrunt Parallelism to 1 does NOT prevent this error from happening. So we'll instead run an init in
     # a single module first to create the buckets so that subsequent run-all commands do not fail.
     - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
-      if: ${{ contains(steps.bootstrap.outputs.terragrunt_command, 'plan') }}
+      if: ${{ contains(steps.gruntwork_context.outputs.terragrunt_command, 'plan') }}
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.bootstrap.outputs.terraform_version }}
-        tg_version: ${{ steps.bootstrap.outputs.terragrunt_version }}
-        pipelines_cli_version: ${{ steps.bootstrap.outputs.pipelines_cli_version }}
-        working_directory: "${{ steps.bootstrap.outputs.working_directory }}/_global/account-baseline"
+        tf_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
+        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
+        working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
         terragrunt_command: "init"
         infra_live_repo: '.'
         infra_live_directory: '.'
-        infra_live_repo_branch: ${{ steps.bootstrap.outputs.branch }}
-        gruntwork_config: "${{ steps.bootstrap.outputs.gruntwork_config }}"
+        infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
+        gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
 
 
     - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.bootstrap.outputs.terraform_version }}
-        tg_version: ${{ steps.bootstrap.outputs.terragrunt_version }}
-        pipelines_cli_version: ${{ steps.bootstrap.outputs.pipelines_cli_version }}
-        working_directory: "${{ steps.bootstrap.outputs.working_directory }}/_global/account-baseline"
-        terragrunt_command: ${{ inputs.terragrunt_command }}
+        tf_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
+        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
+        working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
+        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
         infra_live_repo: '.'
         infra_live_directory: '.'
-        infra_live_repo_branch: ${{ steps.bootstrap.outputs.branch }}
-        gruntwork_config: "${{ steps.bootstrap.outputs.gruntwork_config }}"
+        infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
+        gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
