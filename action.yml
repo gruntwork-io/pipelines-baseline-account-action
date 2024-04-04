@@ -28,7 +28,8 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: security/_global/account-baseline
-        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
+        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
         terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
@@ -45,7 +46,8 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: logs/_global/account-baseline
-        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
+        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
         terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
@@ -63,7 +65,8 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: shared/_global/account-baseline
-        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
+        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
         terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
@@ -122,7 +125,7 @@ runs:
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tf_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
         tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
@@ -137,7 +140,7 @@ runs:
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        tf_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
         tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
@@ -152,7 +155,7 @@ runs:
     - name: "[ProvisionAccount]: Setup Access Control Repo PR"
       id: create_roles_for_access_control
       if: ${{ steps.bootstrap.outputs.action == '' }}
-      uses: gruntwork-io-team/pipelines-provision-access-control@main
+      uses: gruntwork-io-team/pipelines-provision-access-control-action@main
       with:
         gruntwork_context: ${{ toJson(steps.bootstrap.outputs) }}
         gruntwork_code_access_token: ${{ secrets.GRUNTWORK_CODE_ACCESS_TOKEN }}
