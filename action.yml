@@ -28,6 +28,10 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: security/_global/account-baseline
+        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
+        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
+        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
 
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
@@ -41,6 +45,11 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: logs/_global/account-baseline
+        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
+        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
+        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
+
 
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
@@ -54,6 +63,11 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: shared/_global/account-baseline
+        terraform_version: ${{ steps.gruntwork_context.outputs.terraform_version }}
+        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
+        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
+        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
+
 
 
     # Finally, auth to the mgmt account so we can assume a role in the child account
@@ -118,8 +132,8 @@ runs:
         infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
         gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
 
-
-    - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
+    # Apply Access Control Roles and Baseline in Delegated Account
+    - name: "[Baseline]: Bootstrap child account with access control roles, state & logs S3 buckets"
       uses: gruntwork-io/pipelines-execute@v3.0.0
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
@@ -132,3 +146,27 @@ runs:
         infra_live_directory: '.'
         infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
         gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
+
+    # Create Access Control PR
+    # Merge Access Control PR
+    - name: "[ProvisionAccount]: Setup Access Control Repo PR"
+      id: create_roles_for_access_control
+      if: ${{ steps.bootstrap.outputs.action == '' }}
+      uses: gruntwork-io-team/pipelines-provision-access-control@main
+      with:
+        gruntwork_context: ${{ toJson(steps.bootstrap.outputs) }}
+        gruntwork_code_access_token: ${{ secrets.GRUNTWORK_CODE_ACCESS_TOKEN }}
+        # TODO - this needs to be a different token that has enhanced scopes for creating repos
+        manage_repo_token: ${{ secrets.GRUNTWORK_CODE_ACCESS_TOKEN }}
+
+    # Create Delegated Repo
+    # Create PR in Delegated Repo
+    - name: "[ProvisionDelegatedRepo]: Setup delegated Repo"
+      id: provision_delegated_repo
+      if: ${{ steps.bootstrap.outputs.workflow == 'provision-delegated-account.yml' }}
+      uses: gruntwork-io-team/pipelines-provision-repo-action@main
+      with:
+        gruntwork_context: ${{ toJson(steps.bootstrap.outputs) }}
+        gruntwork_code_access_token: ${{ secrets.GRUNTWORK_CODE_ACCESS_TOKEN }}
+        # TODO - this needs to be a different token that has enhanced scopes for creating repos
+        manage_repo_token: ${{ secrets.GRUNTWORK_CODE_ACCESS_TOKEN }}
