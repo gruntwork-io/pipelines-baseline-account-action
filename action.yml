@@ -31,6 +31,7 @@ runs:
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         branch: ${{ steps.gruntwork_context.outputs.branch }}
+        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
       id: terragrunt-apply-logs
@@ -46,7 +47,7 @@ runs:
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         branch: ${{ steps.gruntwork_context.outputs.branch }}
-
+        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
       id: terragrunt-apply-shared
@@ -62,7 +63,7 @@ runs:
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         branch: ${{ steps.gruntwork_context.outputs.branch }}
-
+        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
 
     # Finally, auth to the mgmt account so we can assume a role in the child account
     - name: "[Baseline]: Authenticate to AWS"
@@ -123,6 +124,7 @@ runs:
         infra_live_directory: '.'
         infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
         gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
+        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
 
     # Apply Access Control Roles and Baseline in Delegated Account
     - name: "[Baseline]: Bootstrap child account with access control roles, state & logs S3 buckets"
@@ -136,6 +138,7 @@ runs:
         infra_live_directory: '.'
         infra_live_repo_branch: ${{ steps.gruntwork_context.outputs.branch }}
         gruntwork_config: "${{ steps.gruntwork_context.outputs.gruntwork_config }}"
+        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
 
     # Create Access Control PR
     # Merge Access Control PR
