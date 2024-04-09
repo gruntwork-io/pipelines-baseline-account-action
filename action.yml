@@ -28,9 +28,6 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: security/_global/account-baseline
-        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
-        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
-        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
 
@@ -46,9 +43,6 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: logs/_global/account-baseline
-        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
-        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
-        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
 
@@ -65,9 +59,6 @@ runs:
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: shared/_global/account-baseline
-        tofu_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
-        tf_binary: ${{ steps.bootstrap.outputs.tf_binary }}
-        terragrunt_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
 
@@ -122,11 +113,9 @@ runs:
     # a single module first to create the buckets so that subsequent run-all commands do not fail.
     - name: "[Baseline]: Bootstrap child account with state & logs S3 buckets"
       if: ${{ contains(steps.gruntwork_context.outputs.terragrunt_command, 'plan') }}
-      uses: gruntwork-io/pipelines-execute@v3.0.0
+      uses: gruntwork-io/pipelines-execute@v3.0.0-beta3
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
-        tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
         terragrunt_command: "init"
@@ -137,11 +126,9 @@ runs:
 
     # Apply Access Control Roles and Baseline in Delegated Account
     - name: "[Baseline]: Bootstrap child account with access control roles, state & logs S3 buckets"
-      uses: gruntwork-io/pipelines-execute@v3.0.0
+      uses: gruntwork-io/pipelines-execute@v3.0.0-beta3
       with:
         token: ${{ inputs.gruntwork_code_access_token }}
-        tf_version: ${{ steps.gruntwork_context.outputs.tofu_version }}
-        tg_version: ${{ steps.gruntwork_context.outputs.terragrunt_version }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
         working_directory: "${{ steps.gruntwork_context.outputs.working_directory }}/_global/account-baseline"
         terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
