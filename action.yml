@@ -21,49 +21,34 @@ runs:
       id: terragrunt-apply-security
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
         account_id: ${{ steps.gruntwork_context.outputs.security_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: security/_global/account-baseline
-        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
-        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-        branch: ${{ steps.gruntwork_context.outputs.branch }}
-        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
+        gruntwork_context: ${{ inputs.gruntwork_context }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
       id: terragrunt-apply-logs
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
         account_id: ${{ steps.gruntwork_context.outputs.logs_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: logs/_global/account-baseline
-        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
-        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-        branch: ${{ steps.gruntwork_context.outputs.branch }}
-        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
+        gruntwork_context: ${{ inputs.gruntwork_context }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
       id: terragrunt-apply-shared
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        aws_region: ${{ steps.gruntwork_context.outputs.default_aws_region }}
         gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
-        terragrunt_command: ${{ steps.gruntwork_context.outputs.terragrunt_command }}
         account_id: ${{ steps.gruntwork_context.outputs.shared_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
         working_directory: shared/_global/account-baseline
-        gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
-        pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-        branch: ${{ steps.gruntwork_context.outputs.branch }}
-        deploy_branch_name: ${{ steps.gruntwork_context.outputs.deploy_branch_name }}
+        gruntwork_context: ${{ inputs.gruntwork_context }}
 
     # Finally, auth to the mgmt account so we can assume a role in the child account
     - name: "[Baseline]: Authenticate to AWS"
