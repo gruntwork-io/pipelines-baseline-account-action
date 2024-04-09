@@ -30,7 +30,7 @@ runs:
         working_directory: security/_global/account-baseline
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-
+        branch: ${{ steps.gruntwork_context.outputs.branch }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
       id: terragrunt-apply-logs
@@ -45,7 +45,7 @@ runs:
         working_directory: logs/_global/account-baseline
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-
+        branch: ${{ steps.gruntwork_context.outputs.branch }}
 
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
@@ -61,7 +61,7 @@ runs:
         working_directory: shared/_global/account-baseline
         gruntwork_config_file: ${{ steps.gruntwork_context.outputs.gruntwork_config_file }}
         pipelines_cli_version: ${{ steps.gruntwork_context.outputs.pipelines_cli_version }}
-
+        branch: ${{ steps.gruntwork_context.outputs.branch }}
 
 
     # Finally, auth to the mgmt account so we can assume a role in the child account
