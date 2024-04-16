@@ -1,11 +1,11 @@
 name: Bootstrap a new account in access-control repo
 description: "Sets up a new AWS account and basic roles inside the access control repo"
 inputs:
-  gruntwork_code_access_token:
-    description: "The GRUNTWORK_CODE_ACCESS_TOKEN Secret"
+  PIPELINES_READ_TOKEN:
+    description: "The PIPELINES_READ_TOKEN secret"
     required: true
   gruntwork_context:
-    description: "Gruntwork Context From the Gruntwork Bootstrap step"
+    description: "Gruntwork Context from the Gruntwork Bootstrap step"
     required: true
 
 runs:
@@ -21,7 +21,7 @@ runs:
       id: terragrunt-apply-security
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
+        PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.security_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
@@ -32,7 +32,7 @@ runs:
       id: terragrunt-apply-logs
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
+        PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.logs_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
@@ -43,7 +43,7 @@ runs:
       id: terragrunt-apply-shared
       uses: gruntwork-io-team/pipelines-aws-execute@main
       with:
-        gruntwork_code_access_token: ${{ inputs.gruntwork_code_access_token }}
+        PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.shared_account_id }}
         account_role_name: ${{ steps.gruntwork_context.outputs.role_name }}
         role_session_name: ${{ steps.gruntwork_context.outputs.role_session_name }}
