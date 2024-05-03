@@ -13,13 +13,13 @@ runs:
   steps:
     - name: "[Baseline]: Read account request"
       id: gruntwork_context
-      uses: gruntwork-io/pipelines-bootstrap@v0.0.2
+      uses: gruntwork-io/pipelines-bootstrap@statusupdates
       with:
         cache: ${{ inputs.gruntwork_context }}
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in security account"
       id: terragrunt-apply-security
-      uses: gruntwork-io/pipelines-aws-execute@v0.0.5
+      uses: gruntwork-io/pipelines-aws-execute@statusupdates
       with:
         PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.security_account_id }}
@@ -30,7 +30,7 @@ runs:
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in logs account"
       id: terragrunt-apply-logs
-      uses: gruntwork-io/pipelines-aws-execute@v0.0.5
+      uses: gruntwork-io/pipelines-aws-execute@statusupdates
       with:
         PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.logs_account_id }}
@@ -41,7 +41,7 @@ runs:
 
     - name: "[Baseline]: Run terragrunt ${{ steps.gruntwork_context.outputs.terragrunt_command }} in shared account"
       id: terragrunt-apply-shared
-      uses: gruntwork-io/pipelines-aws-execute@v0.0.5
+      uses: gruntwork-io/pipelines-aws-execute@statusupdates
       with:
         PIPELINES_READ_TOKEN: ${{ inputs.PIPELINES_READ_TOKEN }}
         account_id: ${{ steps.gruntwork_context.outputs.shared_account_id }}
